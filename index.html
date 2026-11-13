@@ -1,0 +1,894 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Parent Hub Forums: proposal</title>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>
+/* Layout: the Parent Hub shell (red header band, neutral page, white cards, bottom tabs on phones / top nav ≥768px),
+   under a slim grey "prototype" bar that switches who you are (parent / teacher / office) and the theme. */
+:root {
+  --red: #8E1420; --gold: #F2B705; --gold-ink: #3a2a00;
+  --page: #f4f4f6; --header: #8E1420; --title: #fff; --who: #eccfd3;
+  --card: #ffffff; --card-border: #e2e2e7; --line: #ececef; --dt: #6b7280; --dd: #1d1d1f; --label: #6b7280;
+  --now-bg: #FFF8E1; --now-t: #6b5400;
+  --bar: #ffffff; --bar-line: #e2e2e7; --bar-fg: #6b7280; --bar-on: #8E1420;
+  --miss: #b3261e; --miss-bg: #fdecea; --late: #6b5400; --late-bg: #FFF3CD; --up: #4b5563; --up-bg: #eef0f2;
+  --ok-bg: #E7F6EC; --ok: #14532d; --info-bg: #e8effc; --info: #1e3a8a;
+  --btn-bg: #F2B705; --btn-fg: #3a2a00; --focus: #8E1420; --accent: #8E1420;
+  --input-bg: #ffffff; --input-border: #c9c9d1; --shade: rgba(20,20,24,.45); --shadow: 0 10px 30px rgba(0,0,0,.18);
+  --proto: #2b2b31; --proto-fg: #e9e9ee; --proto-on: #F2B705;
+  --font: -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  color-scheme: dark;
+  --page: #121216; --header: #5c0d15; --who: #e3c6ca;
+  --card: #1b1b20; --card-border: #2a2a31; --line: #2a2a31; --dt: #9a9aa6; --dd: #ececf1; --label: #9a9aa6;
+  --now-bg: #2a2410; --now-t: #f2d27a;
+  --bar: #17171b; --bar-line: #2a2a31; --bar-fg: #9a9aa6; --bar-on: #F2B705;
+  --miss: #ff8a80; --miss-bg: #33191c; --late: #f2d27a; --late-bg: #2a2410; --up: #c9c9d3; --up-bg: #26262d;
+  --ok-bg: #1d3a26; --ok: #b7efc5; --info-bg: #1b2540; --info: #bcd0ff; --focus: #F2B705; --accent: #F2B705;
+  --input-bg: #16161a; --input-border: #3a3a44; --shade: rgba(0,0,0,.6); --shadow: 0 10px 30px rgba(0,0,0,.6);
+  --proto: #0b0b0e; --proto-fg: #c9c9d3;
+} }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #121216; --header: #5c0d15; --who: #e3c6ca;
+  --card: #1b1b20; --card-border: #2a2a31; --line: #2a2a31; --dt: #9a9aa6; --dd: #ececf1; --label: #9a9aa6;
+  --now-bg: #2a2410; --now-t: #f2d27a;
+  --bar: #17171b; --bar-line: #2a2a31; --bar-fg: #9a9aa6; --bar-on: #F2B705;
+  --miss: #ff8a80; --miss-bg: #33191c; --late: #f2d27a; --late-bg: #2a2410; --up: #c9c9d3; --up-bg: #26262d;
+  --ok-bg: #1d3a26; --ok: #b7efc5; --info-bg: #1b2540; --info: #bcd0ff; --focus: #F2B705; --accent: #F2B705;
+  --input-bg: #16161a; --input-border: #3a3a44; --shade: rgba(0,0,0,.6); --shadow: 0 10px 30px rgba(0,0,0,.6);
+  --proto: #0b0b0e; --proto-fg: #c9c9d3;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { background: var(--page); color: var(--dd); font: 16px/1.4 var(--font); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 40; background: var(--proto); }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+a { color: var(--accent); }
+.gut { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* ---- prototype bar (not part of the design) ---- */
+.proto { background: var(--proto); color: var(--proto-fg); font-size: .76rem; }
+.proto .in { max-width: 60rem; margin: 0 auto; padding-block: 6px; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
+.proto b { color: var(--proto-on); letter-spacing: .06em; text-transform: uppercase; font-size: .68rem; }
+.seg { display: inline-flex; border: 1px solid #55555f; border-radius: 999px; overflow: hidden; }
+.seg button { padding: 0 10px; min-height: 30px; color: var(--proto-fg); font-size: .74rem; font-weight: 600; }
+.seg button.on { background: var(--proto-on); color: #2a1f00; }
+.proto select { background: transparent; color: var(--proto-fg); border: 1px solid #55555f; border-radius: 999px; min-height: 30px; font: inherit; padding: 0 8px; max-width: 100%; }
+.proto select option { color: #1d1d1f; background: #fff; }
+.proto .sp { flex: 1; }
+
+/* ---- Hub shell ---- */
+.hdr { background: var(--header); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; }
+.hin { max-width: 60rem; margin: 0 auto; padding-block: 10px 6px; display: flex; flex-direction: column; gap: 2px; }
+.hrow { display: flex; align-items: center; gap: 10px; }
+.mark { width: 34px; height: 34px; flex: none; border-radius: 50%; background: var(--gold); color: var(--gold-ink); display: grid; place-items: center; font-weight: 900; font-size: .9rem; }
+h1 { font-size: 1.2rem; margin: 0; color: var(--title); font-weight: 700; flex: 1; white-space: nowrap; }
+h1 b { color: var(--gold); }
+.who { color: var(--who); font-size: .8rem; min-height: 28px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.who b { color: #fff; }
+nav.top { display: none; gap: 2px; }
+nav.top button { color: #fff; font-weight: 600; font-size: .92rem; min-height: 44px; padding: 0 12px; border-radius: 10px; opacity: .8; position: relative; }
+nav.top button.on { opacity: 1; box-shadow: inset 0 -3px 0 var(--gold); }
+main { max-width: 46rem; margin: 0 auto; padding-block: 12px calc(96px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 10px; }
+main.wide { max-width: 60rem; }
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--bar); border-top: 1px solid var(--bar-line);
+  display: grid; padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+.tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--bar-fg); font-size: .62rem; font-weight: 600; min-height: 60px; min-width: 0; position: relative; }
+.tab .ic { display: grid; place-items: center; padding: 3px 12px; border-radius: 999px; position: relative; }
+.tab.on { color: var(--bar-on); }
+.tab.on .ic { background: var(--gold); color: var(--gold-ink); }
+.tab svg { width: 20px; height: 20px; }
+.badge { position: absolute; top: -4px; right: 2px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--red); color: #fff;
+  font-size: .64rem; font-weight: 800; display: grid; place-items: center; border: 2px solid var(--bar); font-variant-numeric: tabular-nums; }
+nav.top .badge { position: static; display: inline-grid; margin-left: 6px; background: var(--gold); color: var(--gold-ink); border: 0; vertical-align: 1px; }
+@media (min-width: 768px) { .tabs { display: none; } nav.top { display: flex; } main { padding-bottom: 40px; } }
+@media (max-width: 380px) { h1 { font-size: 1.02rem; } .tab .ic { padding: 3px 8px; } }
+
+/* ---- shared pieces ---- */
+.card { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; overflow: hidden; }
+.pad { padding: 14px; }
+.grouplabel { color: var(--label); font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin: 8px 2px -2px;
+  display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.muted { color: var(--dt); font-size: .86rem; }
+.small { font-size: .78rem; }
+.btn { min-height: 44px; padding: 0 16px; border-radius: 10px; background: var(--btn-bg); color: var(--btn-fg); font-weight: 700; font-size: .95rem;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.btn.alt { background: var(--up-bg); color: var(--up); }
+.btn.danger { background: var(--miss-bg); color: var(--miss); }
+.btn.sm { min-height: 38px; font-size: .84rem; padding: 0 12px; }
+.btn:disabled { opacity: .45; cursor: default; }
+.pill { font-size: .66rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; display: inline-block; }
+.pill.new { background: var(--gold); color: var(--gold-ink); }
+.pill.up { background: var(--up-bg); color: var(--up); }
+.pill.miss { background: var(--miss-bg); color: var(--miss); }
+.pill.late { background: var(--late-bg); color: var(--late); }
+.pill.ok { background: var(--ok-bg); color: var(--ok); }
+.pill.info { background: var(--info-bg); color: var(--info); }
+.back { display: inline-flex; align-items: center; gap: 4px; color: var(--accent); font-weight: 700; font-size: .9rem; min-height: 44px; align-self: flex-start; }
+.note { color: var(--dt); font-size: .76rem; padding: 2px 4px; overflow-wrap: anywhere; }
+.banner { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; font-size: .84rem; background: var(--info-bg); color: var(--info); }
+.banner.warn { background: var(--now-bg); color: var(--now-t); }
+.banner svg { flex: none; width: 18px; height: 18px; margin-top: 1px; }
+.foot { display: flex; justify-content: space-between; gap: 6px 16px; flex-wrap: wrap; color: var(--dt); font-size: .72rem; margin: 12px 2px 0; font-variant-numeric: tabular-nums; }
+.stub { padding: 28px 16px; text-align: center; color: var(--dt); }
+
+/* ---- forums list ---- */
+.intro h2 { margin: 0 0 4px; font-size: 1.15rem; }
+.brow { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); min-height: 64px; }
+.brow:last-child { border-bottom: 0; }
+.bico { width: 40px; height: 40px; border-radius: 10px; flex: none; display: grid; place-items: center; font-weight: 800; font-size: .86rem;
+  background: var(--up-bg); color: var(--up); font-variant-numeric: tabular-nums; }
+.bico.g { background: color-mix(in srgb, var(--red) 14%, var(--card)); color: var(--accent); }
+.bico.c { background: color-mix(in srgb, #1e5aa8 16%, var(--card)); color: var(--info); }
+.btxt { flex: 1; min-width: 0; }
+.bname { font-weight: 700; font-size: .96rem; overflow-wrap: anywhere; }
+.bmeta { font-size: .75rem; color: var(--dt); margin-top: 2px; overflow-wrap: anywhere; }
+.bside { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex: none; font-size: .72rem; color: var(--dt); }
+.brow.off { opacity: .7; cursor: default; }
+details.more summary { padding: 12px 14px; min-height: 44px; cursor: pointer; color: var(--dt); font-size: .86rem; font-weight: 600; }
+
+/* ---- board ---- */
+.bhead { display: flex; flex-direction: column; gap: 6px; }
+.bhead h2 { margin: 0; font-size: 1.2rem; text-wrap: balance; }
+.bhead .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.trow { display: flex; gap: 10px; align-items: flex-start; width: 100%; text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); min-height: 64px; }
+.trow:last-child { border-bottom: 0; }
+.trow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex: none; margin-top: 7px; }
+.trow .dot.read { background: transparent; }
+.ttl { font-weight: 700; font-size: .95rem; line-height: 1.3; overflow-wrap: anywhere; }
+.tmeta { font-size: .74rem; color: var(--dt); margin-top: 3px; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+.rc { flex: none; text-align: center; min-width: 42px; font-size: .68rem; color: var(--dt); font-weight: 600; }
+.rc b { display: block; font-size: 1rem; color: var(--dd); font-variant-numeric: tabular-nums; }
+.newbar { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+
+/* ---- thread ---- */
+.post { padding: 14px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
+.post:last-child { border-bottom: 0; }
+.post.op { background: color-mix(in srgb, var(--gold) 6%, var(--card)); }
+.phead { display: flex; align-items: center; gap: 10px; }
+.av { width: 34px; height: 34px; border-radius: 50%; flex: none; display: grid; place-items: center; font-weight: 800; font-size: .78rem; color: #fff; }
+.pwho { flex: 1; min-width: 0; }
+.pname { font-weight: 700; font-size: .9rem; }
+.ptag { font-size: .72rem; color: var(--dt); }
+.pbody { font-size: .95rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; max-width: 65ch; }
+.pbody.gone { color: var(--dt); font-style: italic; font-size: .86rem; }
+.kebab { min-width: 44px; min-height: 44px; display: grid; place-items: center; color: var(--dt); border-radius: 10px; flex: none; }
+.menu { display: flex; gap: 6px; flex-wrap: wrap; }
+.composer { display: flex; flex-direction: column; gap: 8px; }
+textarea, input[type="text"] { width: 100%; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--dd); border-radius: 10px; font: inherit; padding: 10px 12px; }
+input[type="text"] { min-height: 44px; }
+textarea { resize: vertical; min-height: 96px; line-height: 1.45; }
+label.f { font-size: .78rem; font-weight: 700; color: var(--label); display: flex; justify-content: space-between; gap: 8px; }
+label.f span { font-weight: 600; font-variant-numeric: tabular-nums; }
+.check { display: flex; flex-direction: column; gap: 4px; }
+.check .bad { color: var(--miss); background: var(--miss-bg); border-radius: 8px; padding: 6px 10px; font-size: .82rem; font-weight: 600; }
+.check .hold { color: var(--late); background: var(--late-bg); border-radius: 8px; padding: 6px 10px; font-size: .82rem; font-weight: 600; }
+.asname { font-size: .78rem; color: var(--dt); }
+.locked { display: flex; gap: 8px; align-items: center; padding: 12px 14px; color: var(--dt); font-size: .86rem; }
+
+/* ---- polls + volunteer sign-ups ---- */
+.poll, .signup { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
+.vote { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border: 1px solid var(--card-border); border-radius: 10px;
+  background: var(--card); text-align: left; font-weight: 600; font-size: .92rem; width: 100%; }
+.vote:hover { border-color: var(--gold); }
+.vote .ring { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--dt); flex: none; }
+.res { position: relative; border-radius: 10px; overflow: hidden; background: var(--up-bg); min-height: 42px; display: flex; align-items: center;
+  justify-content: space-between; gap: 8px; padding: 0 12px; font-size: .9rem; }
+.res .fill { position: absolute; inset: 0 auto 0 0; background: color-mix(in srgb, var(--gold) 45%, var(--card)); }
+.res > span { position: relative; overflow-wrap: anywhere; min-width: 0; }
+.res .n { font-variant-numeric: tabular-nums; font-weight: 800; white-space: nowrap; }
+.res.mine { box-shadow: inset 0 0 0 2px var(--gold); }
+.pmeta { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; font-size: .76rem; color: var(--dt); }
+.slot { border: 1px solid var(--card-border); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.slot .top { display: flex; justify-content: space-between; gap: 8px; align-items: center; flex-wrap: wrap; }
+.slot .lab { font-weight: 700; font-size: .92rem; overflow-wrap: anywhere; min-width: 0; }
+.names { display: flex; flex-wrap: wrap; gap: 6px; }
+.nm { font-size: .78rem; background: var(--up-bg); color: var(--up); padding: 3px 9px; border-radius: 999px; }
+.nm.me { background: var(--gold); color: var(--gold-ink); font-weight: 700; }
+.nm.open { background: transparent; border: 1px dashed var(--input-border); color: var(--dt); }
+.optrow { display: flex; gap: 8px; align-items: center; }
+.optrow input[type="text"] { flex: 1; min-width: 0; }
+input[type="number"] { width: 4.5rem; min-height: 44px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--dd); border-radius: 10px; font: inherit; padding: 0 8px; }
+.x { min-width: 44px; min-height: 44px; border-radius: 10px; color: var(--dt); font-size: 1.2rem; flex: none; }
+.addrow { align-self: flex-start; color: var(--accent); font-weight: 700; font-size: .88rem; min-height: 40px; }
+
+/* ---- sheet ---- */
+.shade { position: fixed; inset: 0; background: var(--shade); z-index: 50; display: flex; align-items: flex-end; justify-content: center; }
+.sheet { background: var(--card); color: var(--dd); width: 100%; max-width: 34rem; max-height: 88dvh; overflow: auto; border-radius: 16px 16px 0 0; box-shadow: var(--shadow);
+  padding: 18px max(16px, env(safe-area-inset-left, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 10px; }
+.sheet h3 { margin: 0; font-size: 1.1rem; }
+.sheet ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: .92rem; line-height: 1.45; }
+.sheet .acts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 4px; }
+.radio { display: flex; gap: 10px; align-items: flex-start; min-height: 44px; padding: 8px 4px; border-bottom: 1px solid var(--line); font-size: .92rem; cursor: pointer; }
+.radio input { width: 20px; height: 20px; accent-color: var(--red); margin-top: 1px; flex: none; }
+.radio small { display: block; color: var(--dt); font-size: .76rem; }
+@media (min-width: 768px) { .shade { align-items: center; } .sheet { border-radius: 16px; } }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(76px + env(safe-area-inset-bottom, 0px)); z-index: 60; background: var(--dd); color: var(--page);
+  padding: 10px 16px; border-radius: 10px; font-size: .88rem; font-weight: 600; box-shadow: var(--shadow); max-width: calc(100% - 32px); }
+@media (min-width: 768px) { .toast { bottom: 24px; } }
+
+/* ---- staff hub ---- */
+.qitem { padding: 14px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+.qitem:last-child { border-bottom: 0; }
+.qtop { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: .78rem; color: var(--dt); }
+.quote { border-left: 3px solid var(--card-border); padding: 4px 0 4px 10px; font-size: .9rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.qacts { display: flex; gap: 6px; flex-wrap: wrap; }
+.trow2 { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.trow2:last-child { border-bottom: 0; }
+.sw { position: relative; width: 50px; height: 30px; border-radius: 999px; background: var(--up-bg); border: 1px solid var(--card-border); flex: none; transition: background .15s; }
+.sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--dt); transition: transform .15s, background .15s; }
+.sw[aria-checked="true"] { background: var(--gold); border-color: var(--gold); }
+.sw[aria-checked="true"]::after { transform: translateX(20px); background: var(--gold-ink); }
+.sw:disabled { opacity: .45; cursor: default; }
+@media (prefers-reduced-motion: reduce) { .sw, .sw::after { transition: none; } }
+.swl { display: flex; align-items: center; gap: 10px; font-size: .82rem; color: var(--dt); }
+.confirm { width: 100%; background: var(--now-bg); color: var(--now-t); border-radius: 10px; padding: 10px 12px; font-size: .86rem; display: flex; flex-direction: column; gap: 8px; }
+.log { font-size: .8rem; }
+.log li { padding: 8px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+.log li:last-child { border-bottom: 0; }
+.log ul { list-style: none; margin: 0; padding: 0 14px; }
+.subtabs { display: flex; gap: 6px; overflow-x: auto; }
+.subtabs button { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--card-border); background: var(--card); font-size: .84rem; font-weight: 700; color: var(--dt); white-space: nowrap; }
+.subtabs button.on { background: var(--gold); color: var(--gold-ink); border-color: var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="proto gut" role="region" aria-label="Prototype controls">
+  <div class="in">
+    <b>Prototype</b>
+    <span>Invented people, nothing is saved.</span>
+    <span class="sp"></span>
+    <div class="seg" id="as" role="group" aria-label="View as">
+      <button type="button" data-as="parent">Parent</button><button type="button" data-as="teacher">Teacher</button><button type="button" data-as="office">Office</button>
+    </div>
+    <select id="jump" aria-label="Jump to a screen">
+      <option value="">Jump to a screen…</option>
+      <option value="tools">0 · Parent Hub: Tools menu</option>
+      <option value="list">1 · Forums list</option>
+      <option value="board">2 · Board front page</option>
+      <option value="thread">3 · Thread with replies</option>
+      <option value="compose">4 · New post (+ code of conduct)</option>
+      <option value="report">5 · Report a post</option>
+      <option value="poll">4b · A poll (Grade 6)</option>
+      <option value="signup">4c · A volunteer sign-up (Grade 9)</option>
+      <option value="queue">6 · Staff Hub: moderator queue</option>
+      <option value="boards">7 · Staff Hub: my boards (turn on, open)</option>
+      <option value="browse">8 · Staff Hub: teacher moderates a board</option>
+    </select>
+    <div class="seg" id="theme" role="group" aria-label="Theme">
+      <button type="button" data-th="">Auto</button><button type="button" data-th="light">Light</button><button type="button" data-th="dark">Dark</button>
+    </div>
+    <div class="seg"><button type="button" id="about">About</button><button type="button" id="reset">Reset</button></div>
+  </div>
+</div>
+<div class="hdr gut"><div class="hin">
+  <div class="hrow"><div class="mark" aria-hidden="true">H</div><h1 id="hubname"></h1><nav class="top" id="topnav" aria-label="Sections"></nav></div>
+  <div class="who"><span id="who"></span></div>
+</div></div>
+<main id="main" class="gut"></main>
+<nav class="tabs" id="tabs" aria-label="Sections"></nav>
+<div id="layer"></div>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const I = {
+  overview: '<path d="M3 11l9-8 9 8M5 10v10h14V10"/>', grades: '<path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/>',
+  homework: '<path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+  attendance: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>', calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
+  forums: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11h7M8.5 14h4"/>',
+  myday: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>', tools: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/>',
+  back: '<path d="M15 6l-6 6 6 6"/>', more: '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>', shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
+  pin: '<path d="M12 17v5M5 17h14l-2-5V5h1V3H6v2h1v7z"/>', eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+};
+const svg = (k, w = 20) => `<svg width="${w}" height="${w}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg>`;
+const AVC = ["#8E1420", "#1e5aa8", "#2f7d4f", "#7a4fb0", "#b4580b", "#0f766e", "#9d174d", "#4b5563"];
+const avColor = (n) => AVC[[...n].reduce((a, c) => a + c.charCodeAt(0), 0) % AVC.length];
+const initials = (n) => n.split(" ").map((w) => w[0]).slice(0, 2).join("");
+function ago(m) {
+  if (m < 1) return "just now"; if (m < 60) return `${m} min ago`; if (m < 24 * 60) return `${Math.round(m / 60)} h ago`;
+  const d = Math.round(m / 1440); return d === 1 ? "yesterday" : `${d} days ago`;
+}
+
+/* ───────── invented data (shape = PARENT-FORUMS.md §3) ───────── */
+const ME = { name: "Jennifer Lawson", kids: [{ name: "Avery", grade: "9" }, { name: "Blake", grade: "6" }] };
+const TEACHER = { name: "Mrs. Pemberton" };
+function freshData() {
+  const boards = {
+    g09: { kind: "grade", label: "9", name: "Grade 9 parents", kid: "Avery", members: "Parents of 61 students", mods: "the Grade 9 homeroom teachers and the school office", on: true, state: "open", staffRead: false },
+    g06: { kind: "grade", label: "6", name: "Grade 6 parents", kid: "Blake", members: "Parents of 52 students", mods: "the Grade 6 homeroom teachers and the school office", on: true, state: "open", staffRead: false, pilot: true },
+    c7440: { kind: "class", label: "Geo", name: "World Geography", teacher: "Mrs. Pemberton", period: "Period 2", kid: "Avery", grades: "Grades 9–10", members: "Parents of 48 students", on: true, state: "open", staffRead: false },
+    c7512: { kind: "class", label: "Bio", name: "Biology", teacher: "Mr. Okafor", period: "Period 5", kid: "Avery", grades: "Grades 9–10", members: "Parents of 44 students", on: true, state: "open", staffRead: true },
+    c7388: { kind: "class", label: "Eng", name: "English 9", teacher: "Mrs. Pemberton", period: "Period 4", kid: "Avery", grades: "Grade 9", members: "Parents of 22 students", on: false, state: "open", staffRead: false },
+    c7601: { kind: "class", label: "Alg", name: "Algebra I", teacher: "Mr. Delgado", period: "Period 1", kid: "Avery", grades: "Grades 8–9", members: "Parents of 25 students", on: false, state: "open", staffRead: false },
+    c7655: { kind: "class", label: "Hist", name: "U.S. History", teacher: "Mrs. Pemberton", period: "Period 6", kid: null, grades: "Grade 11", members: "Parents of 27 students", on: false, state: "open", staffRead: false },
+  };
+  const P = (author, tag, at, body, extra = {}) => ({ id: "p" + Math.random().toString(36).slice(2, 8), author, tag, at, body, state: "ok", ...extra });
+  const threads = [
+    { id: "t1", board: "c7440", title: "Map project: does the poster need to be laminated?", pinned: true, locked: false,
+      op: P("Dana Whitfield", "Grade 9 parent", 1500, "The rubric says \"durable,\" and the store has foam board and laminated poster board. Did anyone ask Mrs. Pemberton which one she means? We'd rather not buy both."),
+      replies: [
+        P("Marcus Bell", "Grade 10 parent", 1380, "Our son asked in class. Foam board is fine, laminating isn't required. The rubric is about it surviving the hallway display for two weeks."),
+        P("Grace Ortiz", "Grade 9 parent", 1320, "Same answer here. Also: the supply list on the class page says the legend can be printed, it doesn't have to be hand-lettered."),
+        P("Paul Nguyen", "Grade 9 parent", 610, "Thank you both, that saves us a trip."),
+      ] },
+    { id: "t2", board: "c7440", title: "Study group for the Unit 3 test (climate zones)?", pinned: false, locked: false,
+      op: P("Grace Ortiz", "Grade 9 parent", 95, "A few of the kids want to review together before the test on the 21st. We can host in the library after school Tuesday if the office says it's OK. Would anyone's student want to join?"),
+      replies: [
+        P("Rachel Kim", "Grade 10 parent", 80, "Mine would. Can the library stay open until 4:30?"),
+        P("Grace Ortiz", "Grade 9 parent", 62, "I'll ask the front desk tomorrow and post back here."),
+        P("Tom Haverford", "Grade 9 parent", 40, "", { state: "hidden" }),
+        P("Dana Whitfield", "Grade 9 parent", 12, "Count us in for Tuesday."),
+      ] },
+    { id: "t3", board: "c7440", title: "Where do I find the field trip permission form?", pinned: false, locked: true,
+      op: P("Paul Nguyen", "Grade 9 parent", 4400, "The email said it's online but I can't find it in the Hub."),
+      replies: [ P("Marcus Bell", "Grade 10 parent", 4300, "It's under Forms on the school website, Field Trips → World Geography. Due Friday."), P("Paul Nguyen", "Grade 9 parent", 4280, "Found it, thanks!") ] },
+    { id: "t4", board: "g09", title: "Freshman retreat: what did your kids actually need to pack?", pinned: false, locked: false,
+      op: P("Rachel Kim", "Grade 9 parent", 300, "The list says \"layers.\" Is it cold up there in November? First-time retreat family here."),
+      replies: [ P("Tom Haverford", "Grade 9 parent", 250, "Older sibling went last year: it was in the 30s at night. A real coat, and a flashlight."),
+        P("Sam Ellery", "Grade 9 parent", 190, "Honestly the coach's packing list is just dumb, half of it nobody needs."),
+        P("Grace Ortiz", "Grade 9 parent", 120, "Sleeping bag rated for 30°F if you have one. Pillow is not provided.") ] },
+    { id: "t5", board: "g09", kind: "signup", title: "Senior Locker decorating: volunteers for Friday?", pinned: false, locked: false,
+      op: P("Dana Whitfield", "Grade 9 parent", 900, "The class sponsor asked for parents to help decorate the seniors' lockers on Friday after school. Pick a slot below and I'll pass the list on to her."),
+      signup: { when: "Friday, November 21", closed: false, slots: [
+        { id: "s1", label: "Setup · 3:15–3:45", need: 2, people: ["Dana Whitfield"] },
+        { id: "s2", label: "Decorating · 3:30–4:30", need: 4, people: ["Paul Nguyen", "Grace Ortiz"] },
+        { id: "s3", label: "Clean-up · 4:30–5:00", need: 2, people: [] } ] },
+      replies: [ P("Paul Nguyen", "Grade 9 parent", 860, "Signed up for decorating. Is there a color theme this year?"), P("Marcus Bell", "Grade 9 parent", 700, "Tell Mason R. he still owes my son his calculator back, he can bring it Friday.") ] },
+    { id: "t6", board: "g06", title: "Class party snacks: who's bringing what?", pinned: false, locked: false,
+      op: P("Hannah Price", "Grade 6 parent", 200, "Party is the Wednesday before Thanksgiving. Please keep everything nut-free."),
+      replies: [ P("Lena Morales", "Grade 6 parent", 150, "We'll bring clementines and pretzels.") ] },
+    { id: "t7", board: "g06", title: "Science fair: does the display board have to be the tri-fold kind?", pinned: false, locked: false,
+      op: P("Chris Abbott", "Grade 6 parent", 2600, "The sheet just says \"display board.\" The store is out of tri-folds."), replies: [] },
+    { id: "t9", board: "g06", kind: "poll", title: "Spring field trip: which date works best for chaperones?", pinned: false, locked: false,
+      op: P("Hannah Price", "Grade 6 parent", 70, "The Grade 6 teachers asked which date more of us could chaperone. Vote and they'll go with the most popular."),
+      poll: { options: ["Thursday, April 16", "Friday, April 24", "Either works"], counts: [9, 14, 6], mine: null, closed: false, closes: "Closes November 27" },
+      replies: [ P("Lena Morales", "Grade 6 parent", 45, "Friday is easier for us. Thursday is a work day.") ] },
+    { id: "t8", board: "c7512", title: "Lab coat: school-provided or do we buy one?", pinned: false, locked: false,
+      op: P("Rachel Kim", "Grade 9 parent", 3000, "The syllabus mentions safety goggles but not a coat."),
+      replies: [ P("Paul Nguyen", "Grade 9 parent", 2900, "Goggles only. The lab has aprons.") ] },
+  ];
+  const reports = [
+    { id: "r1", thread: "t5", post: () => findThread("t5").replies[1].id, reason: "Names another child", n: 1, at: 650, status: "open" },
+    { id: "r2", thread: "t4", post: () => findThread("t4").replies[1].id, reason: "Unkind or disrespectful", n: 2, at: 180, status: "open" },
+  ];
+  const held = [{ id: "h1", thread: "t2", author: "Tom Haverford", tag: "Grade 9 parent", at: 40, body: "This stupid test schedule again. Who decided on a Tuesday?", word: "stupid" }];
+  const log = [
+    { at: 40, who: "Prototype check", what: "Held a reply in “Study group for the Unit 3 test” for review (word list)" },
+    { at: 1440, who: "Mrs. Pemberton", what: "Pinned “Map project: does the poster need to be laminated?”" },
+    { at: 4200, who: "Mrs. Pemberton", what: "Locked “Where do I find the field trip permission form?” (answered)" },
+  ];
+  return { boards, threads, reports, held, log };
+}
+let D, S;
+function reset() {
+  D = freshData();
+  for (const r of D.reports) r.post = r.post();
+  S = { as: "parent", tab: "tools", view: { name: "tools" }, staff: "queue", coc: false, seen: { g09: 5, g06: 2, c7440: 4, c7512: 4 }, readT: new Set(["t3", "t7", "t8"]),
+        reads: 1, writes: 0, myReports: new Set(), sheet: null, confirm: null, draft: { title: "", body: "", reply: "", kind: "discussion", opts: ["", ""], slots: [{ label: "", need: 2 }] } };
+}
+const findThread = (id) => D.threads.find((t) => t.id === id);
+const postsOf = (b) => D.threads.filter((t) => t.board === b).reduce((n, t) => n + 1 + t.replies.length, 0);
+const myBoards = () => Object.entries(D.boards).filter(([, b]) => b.kid);
+const newIn = (id) => D.boards[id].on ? Math.max(0, postsOf(id) - (S.seen[id] ?? 0)) : 0;
+const totalNew = () => myBoards().reduce((n, [id]) => n + newIn(id), 0);
+const lastAt = (b) => Math.min(...D.threads.filter((t) => t.board === b).map((t) => Math.min(t.op.at, ...t.replies.map((r) => r.at))), 99999);
+
+/* ───────── content check  ───────── */
+const NEVER = ["damn", "crap"], CHECK = ["stupid", "idiot", "dumb"];
+const fold = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/@/g, "a").replace(/0/g, "o").replace(/[1!]/g, "i").replace(/\$/g, "s");
+function checkText(s) {
+  const out = [];
+  if (/(\+?1[\s.-]?)?\(?\b\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b|\b\d{3}[\s.-]\d{4}\b/.test(s)) out.push({ bad: "Phone numbers can't be posted. Share contact details privately, or ask the office to pass them on." });
+  if (/[\w.+-]+@[\w-]+\.[a-z]{2,}|\b\w+\s*[[(]\s*at\s*[\])]\s*\w+/i.test(s)) out.push({ bad: "Email addresses can't be posted." });
+  const links = s.match(/\bhttps?:\/\/[^\s]+|\bwww\.[^\s]+|\b[a-z0-9-]+(\.[a-z0-9-]+)*\.(com|org|net|edu|io|ly|co|us|info|me|gov)\b(\/[^\s]*)?/gi) || [];
+  if (links.some((l) => !/(^|\/\/|\.|^www\.)harfordchristian\.org\b/i.test(l))) out.push({ bad: "Only harfordchristian.org links can be posted." });
+  const words = fold(s).split(/[^a-z]+/);
+  if (words.some((w) => NEVER.includes(w))) out.push({ bad: "Please reword: that language isn't allowed here." });
+  else if (words.some((w) => CHECK.includes(w))) out.push({ hold: "This will go to a moderator before others see it (it uses a word on the review list)." });
+  return out;
+}
+
+/* ───────── shell ───────── */
+const PARENT_TABS = [["overview", "Overview"], ["grades", "Grades"], ["homework", "Homework"], ["attendance", "Attendance"], ["calendar", "Calendar"], ["tools", "Tools"]];
+const STAFF_TABS = [["myday", "My Day"], ["search", "Search"], ["calendar", "Calendar"], ["attendance", "Attendance"], ["tools", "Tools"]];
+function shell() {
+  const staff = S.as !== "parent";
+  $("hubname").innerHTML = staff ? "HCS <b>Staff</b> Hub" : "HCS <b>Parent</b> Hub";
+  $("who").innerHTML = staff ? (S.as === "teacher" ? `Signed in as <b>${TEACHER.name}</b> · teacher` : "Signed in as <b>Front office</b> · office (Tool access: forumModeration)")
+    : `Signed in as <b>${ME.name}</b> · Avery (9), Blake (6)`;
+  const tabs = staff ? STAFF_TABS : PARENT_TABS, n = staff ? openCount() : totalNew();
+  const badgeTab = "tools";
+  $("tabs").style.gridTemplateColumns = `repeat(${tabs.length}, minmax(0, 1fr))`;
+  $("tabs").innerHTML = tabs.map(([id, l]) => `<button type="button" class="tab${S.tab === id ? " on" : ""}" data-tab="${id}" aria-current="${S.tab === id ? "page" : "false"}"><span class="ic">${svg(id)}${id === badgeTab && n ? `<span class="badge">${n}</span>` : ""}</span>${l}</button>`).join("");
+  $("topnav").innerHTML = tabs.map(([id, l]) => `<button type="button" class="${S.tab === id ? "on" : ""}" data-tab="${id}">${l}${id === badgeTab && n ? `<span class="badge">${n}</span>` : ""}</button>`).join("");
+  document.querySelectorAll("#as button").forEach((b) => b.classList.toggle("on", b.dataset.as === S.as));
+  const th = document.documentElement.getAttribute("data-theme") || "";
+  document.querySelectorAll("#theme button").forEach((b) => b.classList.toggle("on", b.dataset.th === th));
+}
+const openCount = () => D.reports.filter((r) => r.status === "open" && visibleToMod(r.thread)).length + D.held.filter((h) => visibleToMod(h.thread)).length;
+function visibleToMod(tid) {
+  if (S.as === "office") return true;
+  const b = findThread(tid).board; return b === "g09" || (D.boards[b].kind === "class" && D.boards[b].teacher === TEACHER.name);
+}
+function render() {
+  shell();
+  const m = $("main");
+  m.classList.toggle("wide", S.as !== "parent");
+  if (S.as === "parent") {
+    if (S.tab !== "tools") m.innerHTML = `<div class="card stub">This prototype shows <b>Tools → Forums</b> only. The other tabs are the Parent Hub as it is today.</div>`;
+    else if (S.view.name === "tools") m.innerHTML = viewTools();
+    else if (S.view.name === "list") m.innerHTML = viewList();
+    else if (S.view.name === "board") m.innerHTML = viewBoard(S.view.id);
+    else if (S.view.name === "thread") m.innerHTML = viewThread(S.view.id);
+    else if (S.view.name === "compose") m.innerHTML = viewCompose(S.view.board);
+  } else {
+    if (S.tab === "myday") m.innerHTML = viewMyDay();
+    else if (S.tab !== "tools") m.innerHTML = `<div class="card stub">This prototype shows <b>Tools → Forum moderation</b> and the My Day card only.</div>`;
+    else m.innerHTML = viewStaff();
+  }
+  if (S.as === "parent" && S.tab === "tools") m.insertAdjacentHTML("beforeend", `<div class="foot"><span>Firestore this visit: <b>${S.reads}</b> reads · <b>${S.writes}</b> writes</span><span>No live listeners · "new" is saved to your account, so it matches on every device</span></div>`);
+  sheet();
+}
+
+/* ───────── 0. Parent Hub Tools menu ───────── */
+function viewTools() {
+  const n = totalNew();
+  return `<div class="card pad intro"><h2>Tools</h2><p class="muted" style="margin:0">Extra things you can do in the Parent Hub.</p></div>
+    <div class="card"><button type="button" class="brow" data-go="list"><span class="bico g">${svg("forums", 20)}</span>
+      <span class="btxt"><span class="bname">Forums</span><span class="bmeta">Questions and notes with other parents in your children's grades and classes</span></span>
+      <span class="bside">${n ? `<span class="pill new">${n} new</span>` : ""}</span></button>
+    <div class="brow off"><span class="bico">+</span><span class="btxt"><span class="bname muted">More tools later</span><span class="bmeta">More parent tools will be added here.</span></span></div></div>
+    <p class="note">While forums are off and there are no other parent tools, the Tools tab doesn't appear at all.</p>`;
+}
+
+/* ───────── 1. Forums list ───────── */
+function viewList() {
+  const grades = myBoards().filter(([, b]) => b.kind === "grade"), classes = myBoards().filter(([, b]) => b.kind === "class");
+  const on = classes.filter(([, b]) => b.on), off = classes.filter(([, b]) => !b.on);
+  const row = ([id, b]) => {
+    const n = newIn(id), posts = postsOf(id);
+    return `<button type="button" class="brow" data-open-board="${id}">
+      <span class="bico ${b.kind === "grade" ? "g" : "c"}">${esc(b.label)}</span>
+      <span class="btxt"><span class="bname">${esc(b.name)}${b.kind === "class" ? ` <span class="muted small">· ${esc(b.teacher)}</span>` : ""}${b.pilot ? ` <span class="pill info">Pilot</span>` : ""}</span>
+        <span class="bmeta">${b.kind === "grade" ? `For ${esc(b.kid)} · ${esc(b.members)}` : `${esc(b.kid)}'s ${esc(b.period)} · ${esc(b.members)}, ${esc(b.grades)}`}</span></span>
+      <span class="bside">${n ? `<span class="pill new">${n} new</span>` : ""}<span>${posts ? `Active ${ago(lastAt(id))}` : "No posts yet"}</span></span></button>`;
+  };
+  return `<button type="button" class="back" data-go="tools">${svg("back", 18)}Tools</button>
+    <div class="card pad intro"><h2>Forums</h2><p class="muted" style="margin:0">Ask questions and share notes with other HCS parents in your children's grades and classes. Posts show your name as it is in FACTS. Teachers and the school office moderate.</p></div>
+    <div class="grouplabel">Grade boards</div><div class="card">${grades.map(row).join("")}</div>
+    <div class="grouplabel">Class boards <span class="muted small" style="text-transform:none;letter-spacing:0;font-weight:600">Grades 7–12, opened by the teacher</span></div>
+    <div class="card">${on.length ? on.map(row).join("") : `<div class="pad muted">None of Avery's teachers has opened a class board yet.</div>`}
+      ${off.length ? `<details class="more"><summary>${off.length} of Avery's classes don't have a board</summary>${off.map(([, b]) => `<div class="brow off"><span class="bico">${esc(b.label)}</span><span class="btxt"><span class="bname">${esc(b.name)} <span class="muted small">· ${esc(b.teacher)}</span></span><span class="bmeta">The teacher hasn't opened a board for this class.</span></span></div>`).join("")}</details>` : ""}</div>
+    <p class="note">You'll be asked to agree to the forum guidelines the first time you post, reply or report. Reading needs nothing.</p>
+    <p class="note">Blake is in Grade 6, so for Blake there is the grade board only (class boards are for grades 7–12). Grade 6 is the pilot board. It is built switched off, and Josh turns it on.</p>`;
+}
+
+/* ───────── 2. Board front page ───────── */
+function viewBoard(id) {
+  const b = D.boards[id];
+  const ts = D.threads.filter((t) => t.board === id).sort((a, c) => (c.pinned - a.pinned) || (lastOf(a) - lastOf(c)));
+  return `<button type="button" class="back" data-go="list">${svg("back", 18)}Forums</button>
+    <div class="bhead"><h2>${esc(b.name)}${b.kind === "class" ? ` · ${esc(b.teacher)}` : ""}</h2>
+      <div class="row muted small">${esc(b.members)}${b.kind === "class" ? `, ${esc(b.grades)}` : ""} · ${postsOf(id)} posts</div></div>
+    <div class="banner">${svg("shield", 18)}<span>Moderated by ${b.kind === "class" ? `${esc(b.teacher)} (the teacher) and the school office` : esc(b.mods)}. Moderators can read this board and hide or delete posts. Be kind, keep other children's names out, and take concerns about a child to the teacher.</span></div>
+    ${b.state !== "open" ? `<div class="banner warn">${svg("lock", 18)}<span>This board is read-only.</span></div>` : ""}
+    <div class="newbar"><span class="grouplabel" style="margin:0">Latest threads</span><button type="button" class="btn sm" data-compose="${id}" ${b.state !== "open" ? "disabled" : ""}>New post</button></div>
+    <div class="card">${ts.length ? ts.map((t) => {
+      const unread = !S.readT.has(t.id);
+      const last = t.replies.length ? t.replies[t.replies.length - 1] : t.op;
+      return `<button type="button" class="trow" data-open-thread="${t.id}"><span class="dot${unread ? "" : " read"}" aria-label="${unread ? "New" : ""}"></span>
+        <span class="btxt"><span class="ttl">${t.pinned ? `<span class="pill info">Pinned</span> ` : ""}${t.locked ? `<span class="pill up">Locked</span> ` : ""}${kindPill(t)}${esc(t.title)}</span>
+        <span class="tmeta"><span>${esc(t.op.author)}</span><span>·</span><span>last reply ${ago(last.at)}${t.replies.length ? ` by ${esc(last.author)}` : ""}</span></span></span>
+        <span class="rc"><b>${t.replies.length}</b>${t.replies.length === 1 ? "reply" : "replies"}</span></button>`;
+    }).join("") : `<div class="pad muted">No posts yet. Start the first thread.</div>`}</div>
+    <p class="note">This page is one document (the board's latest 30 threads), so opening it costs 1 read. <button type="button" class="back" style="min-height:32px;font-size:.8rem" data-older>Older threads</button></p>`;
+}
+const lastOf = (t) => Math.min(t.op.at, ...t.replies.map((r) => r.at));
+function kindPill(t) {
+  if (t.kind === "poll") return `<span class="pill late">${t.poll.closed ? "Poll · closed" : "Poll"}</span> `;
+  if (t.kind === "signup") { const open = t.signup.slots.reduce((n, x) => n + Math.max(0, x.need - x.people.length), 0);
+    return `<span class="pill ok">${t.signup.closed ? "Sign-up · closed" : open ? `Sign-up · ${open} ${open === 1 ? "spot" : "spots"} open` : "Sign-up · full"}</span> `; }
+  return "";
+}
+/* Poll + sign-up blocks (the thread doc carries them, so still 1 read). ro = moderator view, no buttons. */
+function pollBlock(t, ro) {
+  const P = t.poll, total = P.counts.reduce((a, b) => a + b, 0), showRes = ro || P.mine !== null || P.closed;
+  const mineIsPoster = t.op.author === ME.name;
+  if (!showRes) return `<div class="poll" role="group" aria-label="Vote">${P.options.map((o, i) => `<button type="button" class="vote" data-vote="${t.id}:${i}"><span class="ring"></span>${esc(o)}</button>`).join("")}
+    <div class="pmeta"><span>Anonymous: everyone sees totals, nobody sees who voted for what. Results show after you vote.</span><span>${esc(P.closes)}</span></div></div>`;
+  return `<div class="poll">${P.options.map((o, i) => { const pct = total ? Math.round(P.counts[i] * 100 / total) : 0;
+      return `<div class="res${P.mine === i ? " mine" : ""}"><span class="fill" style="width:${pct}%"></span><span>${esc(o)}${P.mine === i ? " · your vote" : ""}</span><span class="n">${pct}% · ${P.counts[i]}</span></div>`; }).join("")}
+    <div class="pmeta"><span>${total} ${total === 1 ? "vote" : "votes"} · anonymous · ${P.closed ? "closed" : esc(P.closes)}</span>
+      <span style="display:flex;gap:6px">${!ro && !P.closed && P.mine !== null ? `<button type="button" class="btn alt sm" data-change-vote="${t.id}">Change my vote</button>` : ""}
+      ${!P.closed && (ro || mineIsPoster) ? `<button type="button" class="btn alt sm" data-close-thread="${t.id}">Close poll</button>` : ""}</span></div></div>`;
+}
+function signupBlock(t, ro) {
+  const U = t.signup, mineIsPoster = t.op.author === ME.name;
+  return `<div class="signup"><div class="pmeta"><span>${U.when ? `<b>${esc(U.when)}</b> · ` : ""}Names are shown to everyone on this board, nothing else</span></div>
+    ${U.slots.map((x) => { const me = x.people.includes(ME.name), full = x.people.length >= x.need;
+      return `<div class="slot"><div class="top"><span class="lab">${esc(x.label)}</span><span class="pill ${full ? "up" : "ok"}">${x.people.length} of ${x.need}</span></div>
+        <div class="names">${x.people.map((n) => `<span class="nm${n === ME.name && !ro ? " me" : ""}">${esc(n)}${n === ME.name && !ro ? " (you)" : ""}</span>`).join("")}${Array.from({ length: Math.max(0, x.need - x.people.length) }, () => `<span class="nm open">open</span>`).join("")}</div>
+        ${ro || U.closed ? "" : me ? `<button type="button" class="btn alt sm" style="align-self:flex-start" data-signup="${t.id}:${x.id}:off">Take me off</button>`
+          : full ? `<span class="muted small">Full</span>` : `<button type="button" class="btn sm" style="align-self:flex-start" data-signup="${t.id}:${x.id}:on">Sign me up</button>`}</div>`; }).join("")}
+    <div class="pmeta"><span>${U.closed ? "Closed." : ro ? "Moderators can close or delete a sign-up." : "You can take yourself off any time before it closes."}</span>
+      <span style="display:flex;gap:6px">${ro || mineIsPoster ? `<button type="button" class="btn alt sm" data-copylist="${t.id}">Copy list</button>` : ""}
+      ${!U.closed && (ro || mineIsPoster) ? `<button type="button" class="btn alt sm" data-close-thread="${t.id}">Close sign-up</button>` : ""}</span></div></div>`;
+}
+
+/* ───────── 3. Thread ───────── */
+function viewThread(tid) {
+  const t = findThread(tid), b = D.boards[t.board];
+  const post = (p, op) => {
+    const mine = p.author === ME.name, gone = p.state !== "ok" && p.state !== "held";
+    const body = p.state === "hidden" ? "Hidden by a moderator." : p.state === "removed" ? "Removed by a moderator." : p.state === "deleted" ? "Deleted by the author." : esc(p.body);
+    return `<div class="post${op ? " op" : ""}" id="${p.id}">
+      <div class="phead"><span class="av" style="background:${gone ? "var(--dt)" : avColor(p.author)}">${gone ? "–" : initials(p.author)}</span>
+        <span class="pwho"><span class="pname">${gone ? "" : esc(p.author)}${mine && !gone ? " <span class='pill up'>You</span>" : ""}</span>
+          <span class="ptag">${gone ? "" : esc(p.tag) + " · "}${ago(p.at)}${p.edited ? " · edited" : ""}</span></span>
+        ${gone ? "" : `<button type="button" class="kebab" data-menu="${p.id}" aria-label="More for this post">${svg("more")}</button>`}</div>
+      ${op ? `<div class="ttl" style="font-size:1.08rem">${kindPill(t)}${esc(t.title)}</div>` : ""}
+      ${body ? `<div class="pbody${gone ? " gone" : ""}">${body}</div>` : ""}
+      ${op && !gone && t.kind === "poll" ? pollBlock(t, false) : ""}${op && !gone && t.kind === "signup" ? signupBlock(t, false) : ""}
+      ${p.state === "held" ? `<div><span class="pill late">Waiting for a moderator · only you can see this</span></div>` : ""}
+      ${S.myReports.has(p.id) ? `<div><span class="pill up">You reported this</span></div>` : ""}
+      ${S.menu === p.id ? `<div class="menu">${mine ? `<button type="button" class="btn alt sm" data-edit="${p.id}">Edit</button><button type="button" class="btn alt sm" data-del="${p.id}">Delete</button>`
+        : `<button type="button" class="btn alt sm" data-report="${p.id}" ${S.myReports.has(p.id) ? "disabled" : ""}>Report…</button>`}</div>` : ""}
+    </div>`;
+  };
+  const canReply = !t.locked && b.state === "open";
+  const chk = checkText(S.draft.reply);
+  return `<button type="button" class="back" data-open-board="${t.board}">${svg("back", 18)}${esc(b.name)}</button>
+    <div class="card">${post(t.op, true)}${t.replies.map((r) => post(r, false)).join("")}</div>
+    ${canReply ? `<div class="card pad composer">
+        <label class="f" for="reply">Reply <span>${S.draft.reply.length} / 2000</span></label>
+        <textarea id="reply" maxlength="2000" placeholder="Write a reply to everyone on this board">${esc(S.draft.reply)}</textarea>
+        <div class="check" id="replycheck">${chk.map((c) => `<div class="${c.bad ? "bad" : "hold"}">${esc(c.bad || c.hold)}</div>`).join("")}</div>
+        <div class="newbar"><span class="asname">Posting as <b>${ME.name}</b> · Grade 9 parent</span>
+          <button type="button" class="btn" data-send-reply="${t.id}" ${!S.draft.reply.trim() || chk.some((c) => c.bad) ? "disabled" : ""}>Reply</button></div></div>`
+      : `<div class="card locked">${svg("lock", 18)}A moderator locked this thread. You can still read it.</div>`}
+    <p class="note">A thread and its first 100 replies are one document: 1 read. Posting is a server call that also updates the board's front page.</p>`;
+}
+
+/* ───────── 4. New post ───────── */
+function draftText() { const d = S.draft; return [d.title, d.body, ...(d.kind === "poll" ? d.opts : []), ...(d.kind === "signup" ? d.slots.map((x) => x.label) : [])].join("\n"); }
+function composeOk() {
+  const d = S.draft, chk = checkText(draftText());
+  if (chk.some((c) => c.bad) || d.title.trim().length < 4) return false;
+  if (d.kind === "discussion") return !!d.body.trim();
+  if (d.kind === "poll") return d.opts.filter((o) => o.trim()).length >= 2;
+  return d.slots.some((x) => x.label.trim() && x.need >= 1) && !!d.body.trim();
+}
+function viewCompose(id) {
+  const b = D.boards[id], d = S.draft, chk = checkText(draftText());
+  const K = [["discussion", "Discussion"], ["poll", "Poll"], ["signup", "Volunteer sign-up"]];
+  const tl = { discussion: ["Title", "A short question or topic"], poll: ["Question", "What do you want to ask?"], signup: ["What's it for?", "e.g. Senior Locker decorating"] }[d.kind];
+  const bl = { discussion: ["Message", "Plain text. No phone numbers, email addresses or outside links."], poll: ["More details (optional)", "Anything voters should know"], signup: ["Details", "Day, time, where to meet, what to bring"] }[d.kind];
+  return `<button type="button" class="back" data-open-board="${id}">${svg("back", 18)}${esc(b.name)}</button>
+    <div class="card pad composer">
+      <h2 style="margin:0;font-size:1.15rem">New post</h2>
+      <p class="muted" style="margin:0">Everyone on <b>${esc(b.name)}</b> will see this: ${esc(b.members.toLowerCase())}${b.kind === "class" ? `, ${esc(b.grades)}` : ""}.</p>
+      <div class="subtabs" role="radiogroup" aria-label="Kind of post">${K.map(([k, l]) => `<button type="button" role="radio" aria-checked="${d.kind === k}" class="${d.kind === k ? "on" : ""}" data-kind="${k}">${l}</button>`).join("")}</div>
+      <label class="f" for="ptitle">${tl[0]} <span>${d.title.length} / 120</span></label>
+      <input type="text" id="ptitle" maxlength="120" placeholder="${tl[1]}" value="${esc(d.title)}">
+      ${d.kind === "poll" ? `<label class="f">Choices <span>${d.opts.length} / 6</span></label>
+        ${d.opts.map((o, i) => `<div class="optrow"><input type="text" id="opt-${i}" maxlength="80" placeholder="Choice ${i + 1}" value="${esc(o)}" aria-label="Choice ${i + 1}">${d.opts.length > 2 ? `<button type="button" class="x" data-del-opt="${i}" aria-label="Remove choice ${i + 1}">×</button>` : ""}</div>`).join("")}
+        ${d.opts.length < 6 ? `<button type="button" class="addrow" data-add-opt>+ Add a choice</button>` : ""}
+        <p class="note" style="margin:0">One vote per parent, anonymous. Closes after 14 days, or when you close it.</p>` : ""}
+      ${d.kind === "signup" ? `<label class="f">Slots <span>${d.slots.length} / 10</span></label>
+        ${d.slots.map((x, i) => `<div class="optrow"><input type="text" id="slot-${i}" maxlength="60" placeholder="e.g. Setup · 3:15–3:45" value="${esc(x.label)}" aria-label="Slot ${i + 1}">
+          <input type="number" id="need-${i}" min="1" max="50" value="${x.need}" aria-label="People needed for slot ${i + 1}">${d.slots.length > 1 ? `<button type="button" class="x" data-del-slot="${i}" aria-label="Remove slot ${i + 1}">×</button>` : ""}</div>`).join("")}
+        ${d.slots.length < 10 ? `<button type="button" class="addrow" data-add-slot>+ Add a slot</button>` : ""}
+        <p class="note" style="margin:0">The number is how many people each slot needs. Parents sign up with their name only. You and the moderators can copy the list.</p>` : ""}
+      <label class="f" for="pbody">${bl[0]} <span>${d.body.length} / 2000</span></label>
+      <textarea id="pbody" maxlength="2000" rows="${d.kind === "discussion" ? 6 : 3}" placeholder="${bl[1]}">${esc(d.body)}</textarea>
+      <div class="check" id="composecheck">${chk.map((c) => `<div class="${c.bad ? "bad" : "hold"}">${esc(c.bad || c.hold)}</div>`).join("")}</div>
+      <div class="newbar"><span class="asname">Posting as <b>${ME.name}</b> · ${b.kind === "class" ? "Grade 9 parent" : "Grade " + esc(b.label) + " parent"}</span>
+        <span style="display:flex;gap:8px"><button type="button" class="btn alt" data-open-board="${id}">Cancel</button><button type="button" class="btn" id="sendpost" data-send-post="${id}" ${composeOk() ? "" : "disabled"}>Post</button></span></div>
+    </div>
+    <p class="note">Try typing a phone number, an email, a link, or one of the sample words (blocked: damn, crap · held for a moderator: stupid, idiot, dumb). The server runs the same check before saving, on choices and slot names too.</p>`;
+}
+
+/* ───────── sheets: code of conduct, report ───────── */
+function sheet() {
+  const L = $("layer");
+  if (!S.sheet) { L.innerHTML = ""; return; }
+  if (S.sheet.kind === "coc") {
+    L.innerHTML = `<div class="shade" data-shade><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="coch">
+      <h3 id="coch">Before you post: our forum guidelines</h3>
+      <p class="muted" style="margin:0">Placeholder text. The school writes the real code of conduct (open decision).</p>
+      <ol><li>Be kind and assume the best. Write as if the teacher and the principal are reading.</li>
+        <li>Don't name or describe other children, and never discuss any child's grades, behavior or health.</li>
+        <li>Take a concern about a child, a teacher or a grade to the teacher or the office, not to the board.</li>
+        <li>No phone numbers, email addresses or outside links. No selling, fundraising or advertising.</li>
+        <li>Your name is shown as it is in FACTS. Moderators can hide or remove posts and pause posting.</li></ol>
+      <div class="acts"><button type="button" class="btn alt" data-close>Not now</button><button type="button" class="btn" data-coc-ok>I agree</button></div></div></div>`;
+  } else if (S.sheet.kind === "welcome") {
+    L.innerHTML = `<div class="shade" data-shade><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="welh">
+      <h3 id="welh">Parent Forums for the HCS Parent Hub: a proposal</h3>
+      <p style="margin:0">This is a clickable mock-up for staff review. <b>Nothing here is live</b>, nothing you do is saved, and every name and post is invented.</p>
+      <p class="muted" style="margin:0"><b>What it is:</b> a place in the Parent Hub (Tools → Forums) where parents can ask questions and share notes: one board per grade, and for grades 7–12 a board per class once the teacher turns it on. Posts can be discussions, polls or volunteer sign-ups. Teachers and the office moderate.</p>
+      <p class="muted" style="margin:0"><b>How to look around:</b> use the dark bar at the top. <b>Parent / Teacher / Office</b> switches who you are. <b>Jump to a screen</b> goes straight to each part. <b>Reset</b> puts everything back. <b>About</b> brings this note back.</p>
+      <p style="margin:0"><b>Questions for you:</b></p>
+      <ol><li>Should teachers read and moderate their own class boards (hide or delete posts)?</li>
+        <li>Can any parent start a poll or a volunteer sign-up, or only for events a teacher asked for?</li>
+        <li>Should a post be hidden automatically after 3 parents report it, until a moderator looks?</li>
+        <li>Should posting pause overnight and on weekends, when nobody is moderating?</li>
+        <li>What should the code of conduct say? The one shown when you first post is a placeholder.</li></ol>
+      <p class="muted" style="margin:0">Please reply to the message this link came in with your thoughts.</p>
+      <div class="acts"><button type="button" class="btn" data-close>Start looking around</button></div></div></div>`;
+  } else if (S.sheet.kind === "report") {
+    const R = [["unkind", "Unkind or disrespectful"], ["child", "Names or describes another child"], ["private", "Private or contact information"], ["off", "Off topic, selling or spam"], ["other", "Something else"]];
+    L.innerHTML = `<div class="shade" data-shade><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="reph">
+      <h3 id="reph">Report this post</h3>
+      <p class="muted" style="margin:0">The moderators see your report; the person who wrote the post doesn't see who reported it.</p>
+      <div role="radiogroup" aria-label="Reason">${R.map(([v, l], i) => `<label class="radio"><input type="radio" name="rr" value="${v}" ${i === 0 ? "checked" : ""}><span>${l}</span></label>`).join("")}</div>
+      <label class="f" for="rnote">Anything the moderator should know? (optional)</label>
+      <textarea id="rnote" maxlength="300" rows="2" style="min-height:64px"></textarea>
+      <div class="acts"><button type="button" class="btn alt" data-close>Cancel</button><button type="button" class="btn" data-send-report="${S.sheet.post}">Send report</button></div></div></div>`;
+  }
+}
+function toast(msg) {
+  const t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 3200);
+}
+
+/* ───────── 6. Staff Hub: My Day card + moderation ───────── */
+function viewMyDay() {
+  const n = openCount();
+  return `<div class="card pad"><div style="font-size:1.15rem;font-weight:800">Good morning, ${S.as === "teacher" ? "Mrs. Pemberton" : "Front office"}</div><div class="muted">Thursday, November 13</div></div>
+    ${n ? `<button type="button" class="card pad" style="text-align:left;display:flex;gap:12px;align-items:center;width:100%" data-tab="tools">
+      <span class="bico g">${svg("forums", 20)}</span><span class="btxt"><span class="bname">${n} forum ${n === 1 ? "item" : "items"} to review</span><span class="bmeta">Reports and held posts on the boards you moderate</span></span><span class="pill new">Review</span></button>` : ""}
+    <p class="note">The card shows only when there is something to review. Other My Day cards are unchanged.</p>`;
+}
+function viewStaff() {
+  const sub = S.as === "teacher" ? [["queue", "Reports"], ["boards", "My boards"], ["log", "Activity log"]] : [["queue", "Reports"], ["boards", "All boards"], ["log", "Activity log"]];
+  return `<div class="bhead"><div class="muted small">Tools</div><h2>Forum moderation</h2></div>
+    <div class="subtabs" role="tablist">${sub.map(([k, l]) => `<button type="button" role="tab" class="${S.staff === k || (k === "boards" && /browse|modthread/.test(S.staff)) ? "on" : ""}" data-staff="${k}" aria-selected="${S.staff === k}">${l}${k === "queue" && openCount() ? ` · ${openCount()}` : ""}</button>`).join("")}</div>
+    ${S.staff === "queue" ? viewQueue() : S.staff === "boards" ? viewBoardsAdmin() : S.staff === "browse" ? viewModBoard() : S.staff === "modthread" ? viewModThread() : viewLog()}`;
+}
+function boardName(tid) { const b = D.boards[findThread(tid).board]; return b.name + (b.kind === "class" ? " · " + b.teacher : ""); }
+function viewQueue() {
+  const reps = D.reports.filter((r) => r.status === "open" && visibleToMod(r.thread));
+  const held = D.held.filter((h) => visibleToMod(h.thread));
+  const office = S.as === "office";
+  const item = (r) => {
+    const t = findThread(r.thread), p = t.replies.find((x) => x.id === r.post) || t.op;
+    return `<div class="qitem"><div class="qtop"><span class="pill miss">${esc(r.reason)}</span><span>${r.n} ${r.n === 1 ? "report" : "reports"} · ${ago(r.at)}</span><span>·</span><span>${esc(boardName(r.thread))}</span></div>
+      <div class="small muted">In “${esc(t.title)}”, ${esc(p.author)} wrote:</div>
+      <div class="quote">${p.state === "ok" ? esc(p.body) : `<i class="muted">(${p.state})</i>`}</div>
+      <div class="qacts"><button type="button" class="btn alt sm" data-mod="keep" data-r="${r.id}">Keep</button><button type="button" class="btn sm" data-mod="hide" data-r="${r.id}">Hide</button>
+        <button type="button" class="btn danger sm" data-mod="remove" data-r="${r.id}">Delete</button><button type="button" class="btn alt sm" data-mod="lock" data-r="${r.id}">Lock thread</button>
+        ${office ? `<button type="button" class="btn alt sm" data-mod="mute" data-r="${r.id}">Pause this parent 7 days</button>` : ""}</div></div>`;
+  };
+  const hitem = (h) => `<div class="qitem"><div class="qtop"><span class="pill late">Held: review-list word</span><span>${ago(h.at)}</span><span>·</span><span>${esc(boardName(h.thread))}</span></div>
+      <div class="small muted">Reply to “${esc(findThread(h.thread).title)}” by ${esc(h.author)}:</div><div class="quote">${esc(h.body)}</div>
+      <div class="qacts"><button type="button" class="btn sm" data-held="ok" data-h="${h.id}">Publish</button><button type="button" class="btn danger sm" data-held="no" data-h="${h.id}">Don't publish</button></div></div>`;
+  return `${S.as === "teacher" ? `<div class="banner">${svg("shield", 18)}<span>You moderate <b>World Geography</b> (your class board) and <b>Grade 9 parents</b> (you have a Grade 9 homeroom). The office sees every board.</span></div>` : ""}
+    <div class="grouplabel">Reported posts</div><div class="card">${reps.length ? reps.map(item).join("") : `<div class="pad muted">Nothing reported. Thank you for keeping an eye on things.</div>`}</div>
+    <div class="grouplabel">Held for review</div><div class="card">${held.length ? held.map(hitem).join("") : `<div class="pad muted">No held posts.</div>`}</div>
+    <p class="note">Every action is saved to the activity log with your name. Parents see "Hidden by a moderator", never who. Hide keeps the text so it can be restored; Delete removes it for good.</p>`;
+}
+function modBoards() {
+  return Object.entries(D.boards).filter(([id, b]) => S.as === "office" || (b.kind === "class" && b.teacher === TEACHER.name) || id === "g09");
+}
+function viewBoardsAdmin() {
+  const list = modBoards();
+  const row = ([id, b]) => `<div class="trow2">
+      <span class="btxt"><span class="bname">${esc(b.name)}${b.kind === "class" && S.as === "office" ? ` <span class="muted small">· ${esc(b.teacher)}</span>` : ""}${b.pilot ? ` <span class="pill info">Pilot</span>` : ""}</span>
+        <span class="bmeta">${b.kind === "class" ? `${esc(b.period)} · ${esc(b.grades)} · ` : "Grade board · "}${esc(b.members)}${b.on ? ` · ${postsOf(id)} posts` : ""}</span></span>
+      ${b.on ? `<button type="button" class="btn alt sm" data-mod-open="${id}">Open</button>` : ""}
+      ${b.kind === "class" ? `<span class="swl"><button type="button" class="sw" role="switch" aria-checked="${b.on}" aria-label="Board for ${esc(b.name)}" data-on="${id}"></button>${b.on ? "On" : "Off"}</span>` : `<span class="swl">Always on</span>`}
+      ${S.confirm === id ? `<div class="confirm">${b.on ? `<span>Turn the board off? Parents keep reading what's there but can't post. Nothing is deleted.</span>` : `<span>Open a board for <b>${esc(b.name)}</b>? ${esc(b.members)} will see it in the Parent Hub under Tools → Forums. You and the office moderate it.</span>`}
+        <span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" data-confirm-on="${id}">${b.on ? "Turn off" : "Open the board"}</button><button type="button" class="btn alt sm" data-confirm-cancel>Cancel</button></span></div>` : ""}
+    </div>`;
+  const grades = list.filter(([, b]) => b.kind === "grade"), classes = list.filter(([, b]) => b.kind === "class");
+  return `<div class="grouplabel">Grade boards ${S.as === "teacher" ? `<span class="muted small" style="text-transform:none;letter-spacing:0">you have a Grade 9 homeroom</span>` : ""}</div><div class="card">${grades.map(row).join("")}</div>
+    <div class="grouplabel">Class boards ${S.as === "teacher" ? `<span class="muted small" style="text-transform:none;letter-spacing:0">classes you teach, grades 7–12</span>` : ""}</div><div class="card">${classes.map(row).join("")}</div>
+    <p class="note">As a moderator you can open your boards, read everything, and hide or delete any post. Parents are told this on every board. Only classes in grades 7–12 can have a board.${S.as === "teacher" ? " Switch to Parent at the top to see a board you open appear for the family." : ""}</p>`;
+}
+function viewModBoard() {
+  const id = S.modBoard, b = D.boards[id];
+  const ts = D.threads.filter((t) => t.board === id).sort((a, c) => (c.pinned - a.pinned) || (lastOf(a) - lastOf(c)));
+  return `<button type="button" class="back" data-staff="boards">${svg("back", 18)}My boards</button>
+    <div class="bhead"><h2 style="font-size:1.05rem">${esc(b.name)}${b.kind === "class" ? ` · ${esc(b.teacher)}` : ""}</h2><div class="muted small">${esc(b.members)} · moderator view</div></div>
+    <div class="card">${ts.map((t) => `<button type="button" class="trow" data-mod-thread="${t.id}"><span class="btxt"><span class="ttl">${t.pinned ? `<span class="pill info">Pinned</span> ` : ""}${t.locked ? `<span class="pill up">Locked</span> ` : ""}${esc(t.title)}</span>
+      <span class="tmeta"><span>${esc(t.op.author)}</span><span>·</span><span>${t.replies.length} ${t.replies.length === 1 ? "reply" : "replies"}</span></span></span></button>`).join("") || `<div class="pad muted">No posts yet.</div>`}</div>`;
+}
+function viewModThread() {
+  const t = findThread(S.modThread);
+  const post = (p, op) => {
+    const gone = p.state === "hidden" || p.state === "removed" || p.state === "deleted";
+    return `<div class="post${op ? " op" : ""}"><div class="phead"><span class="av" style="background:${avColor(p.author)}">${initials(p.author)}</span>
+      <span class="pwho"><span class="pname">${esc(p.author)}</span><span class="ptag">${esc(p.tag)} · ${ago(p.at)}</span></span>
+      ${p.state !== "ok" ? `<span class="pill ${p.state === "hidden" ? "late" : "miss"}">${{ hidden: "Hidden", removed: "Deleted", deleted: "Deleted by author", held: "Held" }[p.state]}</span>` : ""}</div>
+      ${op ? `<div class="ttl">${kindPill(t)}${esc(t.title)}</div>` : ""}
+      <div class="pbody${p.state === "removed" || p.state === "deleted" ? " gone" : ""}">${p.state === "removed" || p.state === "deleted" ? "(text deleted)" : esc(p.body || "(the hidden text is kept for the moderators; this sample has none)")}</div>
+      <div class="qacts">${p.state === "hidden" ? `<button type="button" class="btn alt sm" data-mp="restore" data-p="${p.id}">Restore</button>` : ""}
+        ${p.state === "ok" ? `<button type="button" class="btn sm" data-mp="hide" data-p="${p.id}">Hide</button>` : ""}
+        ${p.state !== "removed" && p.state !== "deleted" ? `<button type="button" class="btn danger sm" data-mp="remove" data-p="${p.id}">Delete</button>` : ""}</div>
+      ${op && t.kind === "poll" ? pollBlock(t, true) : ""}${op && t.kind === "signup" ? signupBlock(t, true) : ""}</div>`;
+  };
+  return `<button type="button" class="back" data-mod-open="${t.board}">${svg("back", 18)}${esc(D.boards[t.board].name)}</button>
+    <div class="newbar"><span class="muted small">Moderator view. Parents see "Hidden by a moderator" or "Removed by a moderator", never who.</span>
+      <button type="button" class="btn alt sm" data-mlock="${t.id}">${t.locked ? "Unlock thread" : "Lock thread"}</button></div>
+    <div class="card">${post(t.op, true)}${t.replies.map((r) => post(r, false)).join("")}</div>`;
+}
+function viewLog() {
+  return `<div class="card log"><ul>${D.log.map((l) => `<li><b>${esc(l.who)}</b> ${esc(l.what)} <span class="muted">· ${ago(l.at)}</span></li>`).join("")}</ul></div>
+    <p class="note">Kept two years, then deleted. The office sees every board's log; teachers see their own boards'.</p>`;
+}
+
+/* ───────── events ───────── */
+function needCoc(then) { if (S.coc) return then(); S.sheet = { kind: "coc", then }; render(); }
+function seenWrite() { const now = Date.now(); if (!S.lastSeenW || now - S.lastSeenW > 30000) { S.writes++; S.lastSeenW = now; } }
+function openBoard(id) { S.view = { name: "board", id }; S.reads++; S.seen[id] = postsOf(id); seenWrite(); S.menu = null; render(); scrollTo(0, 0); }
+function openThread(id) {
+  S.view = { name: "thread", id }; S.reads++; S.readT.add(id); seenWrite(); S.menu = null; S.draft.reply = ""; render(); scrollTo(0, 0);
+}
+const who = () => (S.as === "teacher" ? TEACHER.name : "Front office");
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("button, [data-shade]");
+  if (!el) return;
+  const d = el.dataset;
+  if (d.shade !== undefined && e.target === el) { S.sheet = null; render(); return; }
+  if (el.tagName !== "BUTTON") return;
+  if (d.as) { S.as = d.as; S.tab = "tools"; S.view = { name: "tools" }; S.staff = "queue"; S.confirm = null; render(); return; }
+  if (d.th !== undefined) { if (d.th) document.documentElement.setAttribute("data-theme", d.th); else document.documentElement.removeAttribute("data-theme"); shell(); return; }
+  if (el.id === "about") { S.sheet = { kind: "welcome" }; render(); return; }
+  if (el.id === "reset") { reset(); render(); toast("Prototype reset"); return; }
+  if (d.tab) { S.tab = d.tab; if (d.tab === "tools") { S.view = { name: "tools" }; if (S.as !== "parent") S.staff = "queue"; } render(); return; }
+  if (d.go === "list" || d.go === "tools") { S.view = { name: d.go }; render(); scrollTo(0, 0); return; }
+  if (d.openBoard) return openBoard(d.openBoard);
+  if (d.openThread) return openThread(d.openThread);
+  if (d.older !== undefined) { toast("Older threads load 20 at a time (20 reads). None older in this prototype."); return; }
+  if (d.compose) return needCoc(() => { S.view = { name: "compose", board: d.compose }; Object.assign(S.draft, { title: "", body: "", kind: "discussion", opts: ["", ""], slots: [{ label: "", need: 2 }] }); render(); });
+  if (d.menu) { S.menu = S.menu === d.menu ? null : d.menu; render(); return; }
+  if (d.report) return needCoc(() => { S.sheet = { kind: "report", post: d.report }; S.menu = null; render(); });
+  if (d.close !== undefined) { S.sheet = null; render(); return; }
+  if (d.cocOk !== undefined) { const then = S.sheet.then; S.coc = true; S.writes++; S.sheet = null; render(); toast("Thanks. You can post and reply now."); then && then(); return; }
+  if (d.sendReport) {
+    const reason = document.querySelector('input[name="rr"]:checked').value;
+    const label = { unkind: "Unkind or disrespectful", child: "Names another child", private: "Private information", off: "Off topic or spam", other: "Something else" }[reason];
+    const t = D.threads.find((x) => x.op.id === d.sendReport || x.replies.some((r) => r.id === d.sendReport));
+    const ex = D.reports.find((r) => r.post === d.sendReport && r.status === "open");
+    if (ex) ex.n++; else D.reports.unshift({ id: "r" + Date.now(), thread: t.id, post: d.sendReport, reason: label, n: 1, at: 0, status: "open" });
+    S.myReports.add(d.sendReport); S.writes++; S.sheet = null; render(); toast("Thanks. A moderator will look at this."); return;
+  }
+  if (d.sendReply && !S.coc) { const tid = d.sendReply; return needCoc(() => document.querySelector(`[data-send-reply="${tid}"]`)?.click()); }
+  if (d.sendReply) {
+    const t = findThread(d.sendReply), body = S.draft.reply.trim(), held = checkText(body).some((c) => c.hold);
+    const p = { id: "p" + Date.now(), author: ME.name, tag: "Grade 9 parent", at: 0, body, state: held ? "held" : "ok" };
+    t.replies.push(p); if (held) D.held.push({ id: "h" + Date.now(), thread: t.id, author: ME.name, tag: p.tag, at: 0, body, word: "", pid: p.id });
+    S.draft.reply = ""; S.writes += 3; S.seen[t.board] = postsOf(t.board); render(); toast(held ? "Sent to a moderator first." : "Reply posted."); return;
+  }
+  if (d.sendPost) {
+    const b = d.sendPost, held = checkText(draftText()).some((c) => c.hold), id = "t" + Date.now(), k = S.draft.kind;
+    const p = { id: "p" + Date.now(), author: ME.name, tag: D.boards[b].kind === "class" ? "Grade 9 parent" : `Grade ${D.boards[b].label} parent`, at: 0, body: S.draft.body.trim(), state: held ? "held" : "ok" };
+    const th = { id, board: b, kind: k, title: S.draft.title.trim(), pinned: false, locked: false, op: p, replies: [] };
+    if (k === "poll") { const o = S.draft.opts.map((x) => x.trim()).filter(Boolean); th.poll = { options: o, counts: o.map(() => 0), mine: null, closed: false, closes: "Closes in 14 days" }; }
+    if (k === "signup") th.signup = { when: "", closed: false, slots: S.draft.slots.filter((x) => x.label.trim()).map((x, i) => ({ id: "s" + i, label: x.label.trim(), need: Math.max(1, Math.min(50, x.need | 0)), people: [] })) };
+    D.threads.unshift(th);
+    if (held) D.held.push({ id: "h" + Date.now(), thread: id, author: ME.name, tag: p.tag, at: 0, body: p.body, pid: p.id });
+    S.writes += 3; S.seen[b] = postsOf(b); S.readT.add(id); S.view = { name: "thread", id }; render(); toast(held ? "Sent to a moderator first." : "Posted."); return;
+  }
+  if (d.kind) { S.draft.kind = d.kind; render(); return; }
+  if (d.addOpt !== undefined) { S.draft.opts.push(""); render(); $("opt-" + (S.draft.opts.length - 1))?.focus(); return; }
+  if (d.delOpt) { S.draft.opts.splice(+d.delOpt, 1); render(); return; }
+  if (d.addSlot !== undefined) { S.draft.slots.push({ label: "", need: 2 }); render(); $("slot-" + (S.draft.slots.length - 1))?.focus(); return; }
+  if (d.delSlot) { S.draft.slots.splice(+d.delSlot, 1); render(); return; }
+  if (d.vote) return needCoc(() => {
+    const [tid, i] = d.vote.split(":"), P = findThread(tid).poll;
+    if (P.mine !== null) P.counts[P.mine]--; P.mine = +i; P.counts[P.mine]++;
+    S.writes += 3; render(); toast("Vote saved. Only the totals are shown.");
+  });
+  if (d.changeVote) { const P = findThread(d.changeVote).poll; P.counts[P.mine]--; P.mine = null; render(); return; }
+  if (d.signup) return needCoc(() => {
+    const [tid, sid, on] = d.signup.split(":"), x = findThread(tid).signup.slots.find((y) => y.id === sid);
+    if (on === "on") { if (x.people.length >= x.need) return toast("That slot just filled up."); x.people.push(ME.name); }
+    else x.people = x.people.filter((n) => n !== ME.name);
+    S.writes += 3; render(); toast(on === "on" ? `You're signed up: ${x.label}.` : "Taken off.");
+  });
+  if (d.copylist) {
+    const t = findThread(d.copylist), txt = t.title + "\n" + t.signup.slots.map((x) => `${x.label}: ${x.people.join(", ") || "(nobody yet)"}`).join("\n");
+    try { navigator.clipboard.writeText(txt).then(() => toast("List copied."), () => toast("Copy isn't available here. The list: " + t.signup.slots.map((x) => x.people.length).reduce((a, b) => a + b, 0) + " names.")); } catch (_) { toast("Copy isn't available here."); }
+    return;
+  }
+  if (d.closeThread) {
+    const t = findThread(d.closeThread); (t.poll || t.signup).closed = true;
+    if (S.as !== "parent") D.log.unshift({ at: 0, who: who(), what: `Closed the ${t.kind === "poll" ? "poll" : "sign-up"} “${t.title}”` });
+    S.writes += 2; render(); toast(t.kind === "poll" ? "Poll closed. Everyone can see the results." : "Sign-up closed."); return;
+  }
+  if (d.edit) { toast("Edit opens the text for 15 minutes after posting (prototype: not wired)."); return; }
+  if (d.del) {
+    for (const t of D.threads) for (const p of [t.op, ...t.replies]) if (p.id === d.del) p.state = "deleted";
+    S.menu = null; S.writes += 2; render(); toast("Deleted."); return;
+  }
+  if (d.staff) { S.staff = d.staff; S.confirm = null; render(); return; }
+  if (d.mod) {
+    const r = D.reports.find((x) => x.id === d.r), t = findThread(r.thread), p = [t.op, ...t.replies].find((x) => x.id === r.post);
+    const what = { keep: "Kept (no action)", hide: "Hid", remove: "Deleted", lock: "Locked the thread for", mute: "Paused posting for 7 days for the author of" }[d.mod];
+    if (d.mod === "hide") p.state = "hidden"; if (d.mod === "remove") p.state = "removed"; if (d.mod === "lock") t.locked = true;
+    r.status = d.mod === "keep" ? "kept" : "done";
+    D.log.unshift({ at: 0, who: who(), what: `${what} a post in “${t.title}” (${r.reason})` });
+    render(); toast(d.mod === "keep" ? "Report closed. The post stays up." : "Done. Saved to the activity log."); return;
+  }
+  if (d.held) {
+    const h = D.held.find((x) => x.id === d.h); D.held = D.held.filter((x) => x !== h);
+    const t = findThread(h.thread);
+    const p = [t.op, ...t.replies].find((x) => x.id === h.pid);
+    if (p) p.state = d.held === "ok" ? "ok" : "removed";
+    else if (d.held === "ok") t.replies.push({ id: "p" + Date.now(), author: h.author, tag: h.tag, at: 0, body: h.body, state: "ok" });
+    D.log.unshift({ at: 0, who: who(), what: `${d.held === "ok" ? "Published" : "Did not publish"} a held reply in “${t.title}”` });
+    render(); toast(d.held === "ok" ? "Published." : "Not published. The author sees “Removed by a moderator”."); return;
+  }
+  if (d.modOpen) { S.staff = "browse"; S.modBoard = d.modOpen; render(); scrollTo(0, 0); return; }
+  if (d.modThread) { S.staff = "modthread"; S.modThread = d.modThread; render(); scrollTo(0, 0); return; }
+  if (d.mp) {
+    const t = findThread(S.modThread), p = [t.op, ...t.replies].find((x) => x.id === d.p);
+    p.state = d.mp === "hide" ? "hidden" : d.mp === "remove" ? "removed" : "ok";
+    D.log.unshift({ at: 0, who: who(), what: `${{ hide: "Hid", remove: "Deleted", restore: "Restored" }[d.mp]} a post in “${t.title}”` });
+    render(); toast({ hide: "Hidden. Saved to the activity log.", remove: "Deleted. Saved to the activity log.", restore: "Restored." }[d.mp]); return;
+  }
+  if (d.mlock) { const t = findThread(d.mlock); t.locked = !t.locked; D.log.unshift({ at: 0, who: who(), what: `${t.locked ? "Locked" : "Unlocked"} “${t.title}”` }); render(); return; }
+  if (d.on) { S.confirm = S.confirm === d.on ? null : d.on; render(); return; }
+  if (d.confirmCancel !== undefined) { S.confirm = null; render(); return; }
+  if (d.confirmOn) {
+    const b = D.boards[d.confirmOn]; b.on = !b.on; S.confirm = null;
+    D.log.unshift({ at: 0, who: who(), what: `${b.on ? "Opened" : "Turned off"} the board for ${b.name}` });
+    render(); toast(b.on ? "Board opened. Families see it within 10 minutes." : "Board turned off."); return;
+  }
+
+});
+document.addEventListener("input", (e) => {
+  const id = e.target.id;
+  const m = /^(opt|slot|need)-(\d+)$/.exec(id || "");
+  if (m) {
+    const i = +m[2];
+    if (m[1] === "opt") S.draft.opts[i] = e.target.value; else if (m[1] === "slot") S.draft.slots[i].label = e.target.value; else S.draft.slots[i].need = +e.target.value;
+    const chk = checkText(draftText()), box = $("composecheck");
+    if (box) box.innerHTML = chk.map((c) => `<div class="${c.bad ? "bad" : "hold"}">${esc(c.bad || c.hold)}</div>`).join("");
+    if ($("sendpost")) $("sendpost").disabled = !composeOk();
+    return;
+  }
+  if (id === "reply" || id === "ptitle" || id === "pbody") {
+    if (id === "reply") S.draft.reply = e.target.value; if (id === "ptitle") S.draft.title = e.target.value; if (id === "pbody") S.draft.body = e.target.value;
+    // live check without re-rendering the field being typed in
+    const isReply = id === "reply", txt = isReply ? S.draft.reply : draftText(), chk = checkText(txt);
+    const box = $(isReply ? "replycheck" : "composecheck");
+    if (box) box.innerHTML = chk.map((c) => `<div class="${c.bad ? "bad" : "hold"}">${esc(c.bad || c.hold)}</div>`).join("");
+    const lab = e.target.previousElementSibling; if (lab && lab.querySelector("span")) lab.querySelector("span").textContent = `${e.target.value.length} / ${id === "ptitle" ? 120 : 2000}`;
+    const btn = isReply ? document.querySelector("[data-send-reply]") : $("sendpost");
+    if (btn) btn.disabled = isReply ? (!S.draft.reply.trim() || chk.some((c) => c.bad)) : !composeOk();
+  }
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && S.sheet) { S.sheet = null; render(); } });
+$("jump").addEventListener("change", (e) => {
+  const v = e.target.value; e.target.value = "";
+  S.sheet = null; S.menu = null; S.confirm = null;
+  if (["tools", "list", "board", "thread", "compose", "report", "poll", "signup"].includes(v)) { S.as = "parent"; S.tab = "tools"; }
+  if (v === "poll") return openThread("t9");
+  if (v === "signup") return openThread("t5");
+  if (v === "tools" || v === "list") S.view = { name: v };
+  if (v === "board") return openBoard("c7440");
+  if (v === "thread") return openThread("t2");
+  if (v === "compose") { S.coc = false; S.view = { name: "board", id: "c7440" }; render(); return needCoc(() => { S.view = { name: "compose", board: "c7440" }; Object.assign(S.draft, { title: "", body: "", kind: "discussion", opts: ["", ""], slots: [{ label: "", need: 2 }] }); render(); }); }
+  if (v === "report") { S.coc = true; openThread("t4"); S.sheet = { kind: "report", post: findThread("t4").replies[1].id }; render(); return; }
+  if (v === "queue" || v === "boards") { S.as = S.as === "parent" ? "teacher" : S.as; S.tab = "tools"; S.staff = v; }
+  if (v === "browse") { S.as = S.as === "parent" ? "teacher" : S.as; S.tab = "tools"; S.staff = "modthread"; S.modBoard = "c7440"; S.modThread = "t2"; }
+  render(); scrollTo(0, 0);
+});
+reset(); S.sheet = { kind: "welcome" }; render();
+</script>
+</body>
+</html>
